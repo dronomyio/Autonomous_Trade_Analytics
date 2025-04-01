@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  trade-agent:
+    build: .
+    container_name: trade-agent
+    volumes:
+      - ./logs:/app/logs
+      - ./templates:/app/templates
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    command: python trade_agent.py --mode api --port 8000
+    restart: unless-stopped
+    networks:
+      - trade-network
+    healthcheck:
+      test: ["CMD", "python", "healthcheck.py", "--service", "agent"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  dashboard:
+    build: .
+    container_name: trade-dashboard
+    volumes:
+      - ./templates:/app/templates
+    ports:
+      - "8080:8080"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    command: python dashboard.py --api-url http://trade-agent:8000 --port 8080
+    depends_on:
+      trade-agent:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - trade-network
+    healthcheck:
+      test: ["CMD", "python", "healthcheck.py", "--service", "dashboard"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  trade-network:
+    driver: bridge
