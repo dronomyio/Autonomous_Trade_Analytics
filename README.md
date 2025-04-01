@@ -167,6 +167,93 @@ The platform includes advanced regulatory filing analysis:
 - Visualize financial metrics with anomaly highlighting
 - Python API for programmatic regulatory analysis
 
+##### Prompt Integration Architecture
+
+The regulatory analysis prompts are fully integrated into the application architecture:
+
+1. **Anomaly Detection → Prompt Generation → Claude Analysis Pipeline**:
+   ```
+   Data Loading → Statistical Analysis → Prompt Assembly → Claude LLM Analysis
+   ```
+
+2. **Dynamic Prompt Generation**:
+   - Prompts are dynamically generated from detected anomalies
+   - Context-specific details (bank/company info, metrics, thresholds) are automatically included
+   - Statistical data (z-scores, YoY changes, peer comparisons) is integrated into the prompt
+   - Analysis questions are tailored to the filing type (Y-9C or 10-K)
+
+3. **Implementation Locations**:
+   - Y-9C prompts: `tools/y9c_anomaly_detector.py` → `generate_anomaly_prompt()`
+   - 10-K prompts: `tools/sec_anomaly_detector.py` → `generate_10k_anomaly_prompt()`
+   - Unified access: `tools/regulatory_analysis.py` → `get_y9c_prompt()` and `get_10k_prompt()`
+
+4. **Claude Integration**:
+   - Prompts are sent to Claude via Anthropic API
+   - Responses are captured and integrated with visualization tools
+   - Analysis can be saved to files or returned programmatically
+
+5. **Example Prompt Generation**:
+   ```python
+   from tools.regulatory_analysis import RegulatoryAnalyzer
+   
+   analyzer = RegulatoryAnalyzer()
+   
+   # Generate a Y-9C prompt without running full analysis
+   y9c_prompt = analyzer.get_y9c_prompt(bank_id=9012)
+   
+   # Or get a 10-K prompt
+   k10_prompt = analyzer.get_10k_prompt(ticker="META")
+   
+   # Run a custom prompt through Claude
+   analysis = analyzer.run_claude_analysis(
+       "Your custom prompt here...",
+       max_tokens=4000
+   )
+   ```
+
+6. **Complete Analysis Workflow Example**:
+   ```python
+   from tools.regulatory_analysis import RegulatoryAnalyzer
+   import os
+   
+   # Get API key from environment (or provide directly)
+   api_key = os.environ.get("ANTHROPIC_API_KEY")
+   
+   # Initialize analyzer
+   analyzer = RegulatoryAnalyzer(api_key=api_key)
+   
+   # Run a full 10-K analysis on Meta's filing
+   results = analyzer.analyze_10k_filing(
+       ticker="META",
+       use_claude=True,
+       save_output=True
+   )
+   
+   # Extract key components
+   anomalies = results['financial_anomalies']
+   yoy_changes = results['yoy_anomalies']
+   prompt = results['prompt']
+   claude_analysis = results['claude_analysis']
+   
+   # Display summary of findings
+   print(f"Found {len(anomalies)} financial statement anomalies")
+   print(f"Found {len(yoy_changes)} significant year-over-year changes")
+   print("\nTop 3 anomalies by z-score:")
+   print(anomalies.sort_values('z_score', ascending=False).head(3)[
+       ['metric', 'value', 'z_score', 'direction']
+   ])
+   
+   # Display Claude's key insights (first 500 chars)
+   print("\nClaude's Analysis Highlights:")
+   print(claude_analysis[:500] + "...")
+   
+   # Visualize the anomalies
+   analyzer.sec_detector.plot_company_metrics(
+       analyzer.sec_detector.load_10k_data(),
+       ticker="META"
+   )
+   ```
+
 #### Data Integration
 
 The platform supports various market data formats:
