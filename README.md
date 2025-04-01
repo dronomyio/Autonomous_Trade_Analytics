@@ -9,6 +9,12 @@ An AI-powered stock trading analytics platform that leverages Claude to make tra
 - Portfolio tracking and performance metrics
 - Trade trajectory system for decision auditing
 - Market data integration and analysis tools
+- Advanced financial engineering tools for quantitative analysis:
+  - Returns analysis (simple, log, cumulative)
+  - Risk metrics (volatility, Sharpe ratio, VaR, drawdown)
+  - Technical indicators (SMA, EMA, RSI, MACD, Bollinger Bands)
+  - Portfolio optimization using modern portfolio theory
+  - Statistical analysis for financial time series
 
 ## Architecture Overview
 
@@ -19,6 +25,7 @@ This platform is built on the EVA (Executions with Verified Agents) framework, a
 3. **Trajectory System**: Recording and tracking every action, state, and result
 4. **Task Verification**: Validating if trading objectives have been accomplished
 5. **Web Dashboard**: Visualizing portfolio performance and agent decisions
+6. **Financial Tools**: Suite of quantitative analysis tools for financial engineering
 
 ## Setup Instructions
 
@@ -137,6 +144,15 @@ python dashboard.py --api-url http://localhost:8000 --port 8080
 
 Then access the dashboard at [http://localhost:8080](http://localhost:8080)
 
+#### Financial Tools Interface
+
+The platform includes a suite of financial engineering tools:
+- Access the financial tools UI at [http://localhost:8080/tools](http://localhost:8080/tools)
+- Analyze returns and calculate risk metrics
+- Generate and visualize technical indicators
+- Optimize portfolio allocation using modern portfolio theory
+- API endpoints available at `/analyze/returns`, `/analyze/indicators`, and `/analyze/optimize-portfolio`
+
 #### Conversational Interface
 
 The platform includes a chat interface where you can directly interact with the trading agent:
@@ -172,6 +188,7 @@ The system comes with several predefined trading tasks:
 - `market_connector.py` - Market data and broker API connections
 - `trade_agent.py` - Main implementation with trajectory system
 - `dashboard.py` - Web UI for monitoring and control
+- `tools/` - Financial engineering and quantitative analysis toolset
 
 ## Extending the System
 
@@ -181,6 +198,8 @@ The platform can be extended in several ways:
 2. Connect to real brokerage APIs by extending `market_connector.py`
 3. Implement additional verification metrics
 4. Enhance the dashboard with more visualizations
+5. Expand the financial tools module with additional analytics
+6. Integrate machine learning models for prediction
 
 ## License
 
