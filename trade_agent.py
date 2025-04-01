@@ -97,6 +97,91 @@ class TradingAPI:
                 }
                 for task in REGISTERED_TASKS
             ]
+            
+        # Financial tools endpoints
+        @self.app.post("/analyze/returns")
+        async def analyze_returns(data: Dict[str, Any]):
+            """Analyze returns for a given price series."""
+            if self.agent is None:
+                # Initialize agent if needed
+                if self.market_connector is None:
+                    self.market_connector = MarketConnector(mode="paper")
+                    await self.market_connector.connect()
+                self.agent = TradingAgent(market_connector=self.market_connector)
+            
+            # Extract prices from request
+            prices = data.get("prices", [])
+            periods_per_year = data.get("periods_per_year", 252)
+            
+            if not prices:
+                raise HTTPException(status_code=400, detail="Prices are required")
+            
+            # Convert to pandas Series
+            prices_series = pd.Series(prices)
+            
+            # Use the financial toolkit to analyze returns
+            return self.agent.financial_toolkit.analyze_returns(prices_series, periods_per_year)
+        
+        @self.app.post("/analyze/indicators")
+        async def analyze_indicators(data: Dict[str, Any]):
+            """Generate technical indicators for a price series."""
+            if self.agent is None:
+                # Initialize agent if needed
+                if self.market_connector is None:
+                    self.market_connector = MarketConnector(mode="paper")
+                    await self.market_connector.connect()
+                self.agent = TradingAgent(market_connector=self.market_connector)
+            
+            # Extract prices from request
+            prices = data.get("prices", [])
+            high = data.get("high", None)
+            low = data.get("low", None)
+            
+            if not prices:
+                raise HTTPException(status_code=400, detail="Prices are required")
+            
+            # Convert to pandas Series
+            prices_series = pd.Series(prices)
+            high_series = pd.Series(high) if high else None
+            low_series = pd.Series(low) if low else None
+            
+            # Generate indicators
+            indicators = self.agent.financial_toolkit.generate_technical_indicators(
+                prices_series, high_series, low_series
+            )
+            
+            # Convert Series to lists for JSON serialization
+            result = {}
+            for name, series in indicators.items():
+                result[name] = series.tolist()
+                
+            return result
+            
+        @self.app.post("/analyze/optimize-portfolio")
+        async def optimize_portfolio(data: Dict[str, Any]):
+            """Optimize a portfolio of assets based on historical returns."""
+            if self.agent is None:
+                # Initialize agent if needed
+                if self.market_connector is None:
+                    self.market_connector = MarketConnector(mode="paper")
+                    await self.market_connector.connect()
+                self.agent = TradingAgent(market_connector=self.market_connector)
+            
+            # Extract returns data from request
+            returns_data = data.get("returns", {})
+            risk_free_rate = data.get("risk_free_rate", 0.0)
+            target_return = data.get("target_return", None)
+            
+            if not returns_data:
+                raise HTTPException(status_code=400, detail="Returns data is required")
+            
+            # Convert to pandas DataFrame
+            returns_df = pd.DataFrame(returns_data)
+            
+            # Optimize the portfolio
+            return self.agent.financial_toolkit.optimize_portfolio(
+                returns_df, risk_free_rate, target_return
+            )
 
         @self.app.get("/status")
         async def get_status():

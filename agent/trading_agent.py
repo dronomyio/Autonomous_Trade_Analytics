@@ -26,6 +26,9 @@ from eva import (
 # Import local modules
 from market_connector import MarketConnector
 
+# Import financial tools
+from tools.interface import FinancialToolkit
+
 # Define standard event types
 EVENT_SNAPSHOT_CREATED = "snapshot_created"
 EVENT_ACTION_STARTED = "action_started"
@@ -254,6 +257,9 @@ class TradingAgent(Agent[Dict[str, Any], str, bool, str]):
         self.message_history = []
         self.max_history = max_history
         
+        # Initialize financial toolkit
+        self.financial_toolkit = FinancialToolkit()
+        
         # Specialized trajectory
         self.trajectory = TradingTrajectory()
         
@@ -344,6 +350,11 @@ Before each action, explain your reasoning briefly, then use the available tradi
 ### Current Positions
 """
         positions = portfolio.get("positions", {})
+        
+        # Create price history for analytics if available
+        price_histories = {}
+        position_returns = {}
+        
         for ticker, position in positions.items():
             current_price = position.get("current_price", 0)
             avg_price = position.get("avg_price", 0)
@@ -352,6 +363,27 @@ Before each action, explain your reasoning briefly, then use the available tradi
             pnl_pct = ((current_price - avg_price) / avg_price) * 100 if avg_price > 0 else 0
             
             portfolio_text += f"- {ticker}: {shares} shares @ avg ${avg_price:.2f}, current: ${current_price:.2f}, value: ${position_value:.2f}, P&L: {pnl_pct:.2f}%\n"
+            
+            # Get price history if available
+            price_history = position.get("price_history", [])
+            if price_history:
+                price_histories[ticker] = pd.Series(price_history)
+                
+                # Calculate returns if we have enough data
+                if len(price_history) >= 2:
+                    position_returns[ticker] = self.financial_toolkit.analyze_returns(
+                        pd.Series(price_history)
+                    )
+        
+        # Add position analytics if we have return data
+        if position_returns:
+            portfolio_text += "\n### Position Analytics\n"
+            for ticker, metrics in position_returns.items():
+                portfolio_text += f"**{ticker}**:\n"
+                portfolio_text += f"- Annualized Return: {metrics.get('annualized_return', 0)*100:.2f}%\n"
+                portfolio_text += f"- Volatility: {metrics.get('volatility', 0)*100:.2f}%\n"
+                portfolio_text += f"- Sharpe Ratio: {metrics.get('sharpe_ratio', 0):.2f}\n"
+                portfolio_text += f"- Max Drawdown: {metrics.get('max_drawdown', 0)*100:.2f}%\n"
         
         portfolio_text += """
 ### Sector Allocation
@@ -367,6 +399,28 @@ Before each action, explain your reasoning briefly, then use the available tradi
         risk_metrics = portfolio.get("risk_metrics", {})
         for metric, value in risk_metrics.items():
             portfolio_text += f"- {metric}: {value}\n"
+            
+        # Add portfolio optimization suggestion if we have position returns
+        if len(position_returns) >= 2:
+            try:
+                # Create returns DataFrame
+                returns_df = pd.DataFrame({ticker: self.financial_toolkit.log_return(price_histories[ticker]) 
+                                        for ticker in price_histories.keys()})
+                
+                # Run portfolio optimization
+                opt_result = self.financial_toolkit.optimize_portfolio(returns_df)
+                
+                portfolio_text += "\n### Portfolio Optimization Analysis\n"
+                portfolio_text += "Optimal weights based on historical performance:\n"
+                
+                for ticker, weight in opt_result['weights'].items():
+                    portfolio_text += f"- {ticker}: {weight*100:.1f}%\n"
+                    
+                portfolio_text += f"\nExpected return: {opt_result['expected_return']*100:.2f}%\n"
+                portfolio_text += f"Expected volatility: {opt_result['expected_volatility']*100:.2f}%\n"
+                portfolio_text += f"Sharpe ratio: {opt_result['sharpe_ratio']:.2f}\n"
+            except Exception as e:
+                log(LogLevel.WARNING, f"Portfolio optimization failed: {str(e)}")
         
         user_content.append({"type": "text", "text": portfolio_text})
         
@@ -386,6 +440,43 @@ Before each action, explain your reasoning briefly, then use the available tradi
         for sector, data in market_data.get("sectors", {}).items():
             change = data.get("change_pct", 0) * 100
             market_text += f"- {sector}: {change:+.2f}%\n"
+            
+        # Add technical indicators for positions if available
+        if price_histories:
+            market_text += "\n### Technical Indicators\n"
+            for ticker, prices in price_histories.items():
+                if len(prices) >= 50:  # Need enough data for indicators
+                    try:
+                        indicators = self.financial_toolkit.generate_technical_indicators(prices)
+                        
+                        market_text += f"**{ticker}**:\n"
+                        
+                        # Get latest values for key indicators
+                        latest_idx = -1
+                        rsi = indicators.get('rsi', pd.Series()).iloc[latest_idx] if not indicators.get('rsi', pd.Series()).empty else None
+                        sma20 = indicators.get('sma_20', pd.Series()).iloc[latest_idx] if not indicators.get('sma_20', pd.Series()).empty else None
+                        sma50 = indicators.get('sma_50', pd.Series()).iloc[latest_idx] if not indicators.get('sma_50', pd.Series()).empty else None
+                        macd = indicators.get('macd', pd.Series()).iloc[latest_idx] if not indicators.get('macd', pd.Series()).empty else None
+                        macd_signal = indicators.get('macd_signal', pd.Series()).iloc[latest_idx] if not indicators.get('macd_signal', pd.Series()).empty else None
+                        
+                        current_price = prices.iloc[-1]
+                        
+                        # RSI
+                        if rsi is not None and not np.isnan(rsi):
+                            market_text += f"- RSI: {rsi:.1f} ({'Oversold' if rsi < 30 else 'Overbought' if rsi > 70 else 'Neutral'})\n"
+                            
+                        # Moving Averages
+                        if sma20 is not None and sma50 is not None and not np.isnan(sma20) and not np.isnan(sma50):
+                            ma_trend = "Bullish" if sma20 > sma50 else "Bearish" if sma20 < sma50 else "Neutral"
+                            market_text += f"- MA Trend: {ma_trend} (SMA20: ${sma20:.2f}, SMA50: ${sma50:.2f})\n"
+                            market_text += f"- Price vs MA: {'Above' if current_price > sma20 else 'Below'} SMA20, {'Above' if current_price > sma50 else 'Below'} SMA50\n"
+                            
+                        # MACD
+                        if macd is not None and macd_signal is not None and not np.isnan(macd) and not np.isnan(macd_signal):
+                            macd_trend = "Bullish" if macd > macd_signal else "Bearish"
+                            market_text += f"- MACD: {macd_trend} (MACD: {macd:.3f}, Signal: {macd_signal:.3f})\n"
+                    except Exception as e:
+                        log(LogLevel.WARNING, f"Technical analysis failed for {ticker}: {str(e)}")
         
         user_content.append({"type": "text", "text": market_text})
         
