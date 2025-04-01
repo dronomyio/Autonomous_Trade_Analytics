@@ -153,6 +153,36 @@ The platform includes a suite of financial engineering tools:
 - Optimize portfolio allocation using modern portfolio theory
 - API endpoints available at `/analyze/returns`, `/analyze/indicators`, and `/analyze/optimize-portfolio`
 
+#### Data Integration
+
+The platform supports various market data formats:
+- Stock data in CSV format in the `/data/stocks/` directory
+- Options chains in JSON format in the `/data/options/` directory
+- Financial news and sentiment in JSON format in the `/data/news/` directory
+
+A data loader utility is provided to integrate this data with the financial tools:
+```python
+from tools.data_loader import DataLoader
+
+# Initialize the data loader
+loader = DataLoader()
+
+# List available stocks
+tickers = loader.list_available_stocks()
+
+# Load stock data for analysis
+aapl_data = loader.load_stock_data("AAPL")
+
+# Load options data
+aapl_options = loader.load_options_data("AAPL")
+
+# Load news data
+aapl_news = loader.load_news_data(ticker="AAPL")
+
+# Run full analysis using the financial toolkit
+analysis = loader.analyze_stock("AAPL")
+```
+
 #### Conversational Interface
 
 The platform includes a chat interface where you can directly interact with the trading agent:
@@ -189,6 +219,10 @@ The system comes with several predefined trading tasks:
 - `trade_agent.py` - Main implementation with trajectory system
 - `dashboard.py` - Web UI for monitoring and control
 - `tools/` - Financial engineering and quantitative analysis toolset
+- `data/` - Market data directory structure:
+  - `stocks/` - Historical stock price data in CSV format
+  - `options/` - Options chain data in JSON format
+  - `news/` - Financial news and sentiment data in JSON format
 
 ## Extending the System
 

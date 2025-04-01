@@ -1,0 +1,50 @@
+{
+  "date": "2023-01-31",
+  "articles": [
+    {
+      "headline": "Apple Reports Better-Than-Expected Q1 Earnings Despite Challenges",
+      "source": "Financial Times",
+      "date": "2023-01-31T16:30:00Z",
+      "url": "https://www.ft.com/content/example-article-1",
+      "summary": "Apple Inc. reported first-quarter earnings that beat Wall Street expectations, despite challenges in the supply chain and macroeconomic headwinds. The company reported revenue of $117.15 billion, slightly below expectations, but earnings per share came in at $1.88, above the expected $1.85.",
+      "sentiment": 0.65,
+      "tickers": ["AAPL"]
+    },
+    {
+      "headline": "Fed Expected to Slow Rate Hikes as Inflation Shows Signs of Cooling",
+      "source": "Wall Street Journal",
+      "date": "2023-01-31T12:45:00Z",
+      "url": "https://www.wsj.com/content/example-article-2",
+      "summary": "The Federal Reserve is expected to raise interest rates by a quarter percentage point at its meeting this week, a step down from larger increases in recent months as inflation shows signs of cooling. Officials have indicated they plan to continue raising rates but at a slower pace to evaluate the impact of their monetary tightening on the economy.",
+      "sentiment": 0.45,
+      "tickers": ["SPY", "QQQ", "DIA"]
+    },
+    {
+      "headline": "Tesla Stock Rallies as Musk Outlines Path to Affordable EVs",
+      "source": "Bloomberg",
+      "date": "2023-01-31T10:15:00Z",
+      "url": "https://www.bloomberg.com/content/example-article-3",
+      "summary": "Tesla Inc. shares rallied after CEO Elon Musk outlined the company's path to producing more affordable electric vehicles during the recent earnings call. The company plans to start manufacturing its next-generation vehicles before 2025, which could help it compete in the mass market segment.",
+      "sentiment": 0.72,
+      "tickers": ["TSLA"]
+    },
+    {
+      "headline": "Microsoft Invests Billions in ChatGPT Maker OpenAI",
+      "source": "CNBC",
+      "date": "2023-01-31T09:30:00Z",
+      "url": "https://www.cnbc.com/content/example-article-4",
+      "summary": "Microsoft has announced a multibillion-dollar investment in OpenAI, the maker of ChatGPT and other AI tools. The tech giant plans to integrate OpenAI's technology across its products, including Bing search engine and Office productivity suite, as it competes with Google in the AI space.",
+      "sentiment": 0.78,
+      "tickers": ["MSFT", "GOOGL"]
+    },
+    {
+      "headline": "AMD Earnings Top Expectations Despite PC Market Slowdown",
+      "source": "Reuters",
+      "date": "2023-01-31T17:45:00Z",
+      "url": "https://www.reuters.com/content/example-article-5",
+      "summary": "Advanced Micro Devices reported fourth-quarter earnings that beat analysts' expectations, despite a slowdown in the PC market. The chipmaker's data center business showed strong growth, offsetting weakness in its client segment. The company provided an optimistic outlook for 2023, citing continued momentum in its data center and embedded segments.",
+      "sentiment": 0.68,
+      "tickers": ["AMD", "INTC", "NVDA"]
+    }
+  ]
+}
