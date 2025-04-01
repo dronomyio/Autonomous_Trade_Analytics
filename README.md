@@ -15,6 +15,10 @@ An AI-powered stock trading analytics platform that leverages Claude to make tra
   - Technical indicators (SMA, EMA, RSI, MACD, Bollinger Bands)
   - Portfolio optimization using modern portfolio theory
   - Statistical analysis for financial time series
+- Regulatory filing anomaly detection:
+  - FR Y-9C bank filing analysis
+  - SEC 10-K annual report analysis
+  - Claude-powered analysis of detected anomalies
 
 ## Architecture Overview
 
@@ -26,6 +30,7 @@ This platform is built on the EVA (Executions with Verified Agents) framework, a
 4. **Task Verification**: Validating if trading objectives have been accomplished
 5. **Web Dashboard**: Visualizing portfolio performance and agent decisions
 6. **Financial Tools**: Suite of quantitative analysis tools for financial engineering
+7. **Regulatory Analysis**: Tools for detecting anomalies in financial regulatory filings
 
 ## Setup Instructions
 
@@ -153,12 +158,22 @@ The platform includes a suite of financial engineering tools:
 - Optimize portfolio allocation using modern portfolio theory
 - API endpoints available at `/analyze/returns`, `/analyze/indicators`, and `/analyze/optimize-portfolio`
 
+#### Regulatory Analysis Interface
+
+The platform includes advanced regulatory filing analysis:
+- Analyze FR Y-9C bank regulatory filings for anomalies
+- Analyze SEC 10-K annual reports for financial statement anomalies
+- Generate detailed analysis prompts for Claude
+- Visualize financial metrics with anomaly highlighting
+- Python API for programmatic regulatory analysis
+
 #### Data Integration
 
 The platform supports various market data formats:
 - Stock data in CSV format in the `/data/stocks/` directory
 - Options chains in JSON format in the `/data/options/` directory
 - Financial news and sentiment in JSON format in the `/data/news/` directory
+- Regulatory filing data in the `/data/regulatory/` directory
 
 A data loader utility is provided to integrate this data with the financial tools:
 ```python
@@ -218,11 +233,20 @@ The system comes with several predefined trading tasks:
 - `market_connector.py` - Market data and broker API connections
 - `trade_agent.py` - Main implementation with trajectory system
 - `dashboard.py` - Web UI for monitoring and control
-- `tools/` - Financial engineering and quantitative analysis toolset
+- `tools/` - Financial engineering and quantitative analysis toolset:
+  - `returns.py`, `risk.py`, `statistics.py`, etc. - Financial computation modules
+  - `interface.py` - Unified interface for financial tools
+  - `data_loader.py` - Utilities for loading market data
+  - `y9c_anomaly_detector.py` - Bank regulatory filing analysis
+  - `sec_anomaly_detector.py` - SEC 10-K filing analysis
+  - `regulatory_analysis.py` - Unified interface for regulatory analysis
 - `data/` - Market data directory structure:
   - `stocks/` - Historical stock price data in CSV format
   - `options/` - Options chain data in JSON format
   - `news/` - Financial news and sentiment data in JSON format
+  - `regulatory/` - Regulatory filing data:
+    - `y9c/` - FR Y-9C bank filing data
+    - `10k/` - SEC 10-K filing data
 
 ## Extending the System
 
